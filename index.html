@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="stylesheet" href="css/leaflet.css" />
+    <link rel="stylesheet" href="css/qgis2web.css" />
+    <link rel="stylesheet" href="css/fontawesome-all.min.css" />
+    <link rel="stylesheet" href="css/leaflet-search.css" />
+    <link rel="stylesheet" href="css/filter.css" />
+    <link rel="stylesheet" href="css/nouislider.min.css" />
+    <style>
+      html,
+      body,
+      #map {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+      }
+      .slider-input {
+        width: 60px;
+      }
+      .legend_Dynamic {
+        background: rgb(231, 228, 228);
+        display: block;
+        position: relative;
+      }
+      .service_providers_icon {
+        height: 20px;
+        width: 20px;
+      }
+      .legend_title {
+        font-weight: bolder;
+      }
+      .directory_Dynamic {
+        background: rgb(231, 228, 228);
+        display: block;
+        position: relative;
+      }
+      .company_text {
+        color: black;
+        align-content: center;
+      }
+    </style>
+    <title>
+      A comprehensive visual illustration of palliative care services in the
+      Eastern Mediterranean Region.
+    </title>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script src="js/qgis2web_expressions.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/leaflet.rotatedMarker.js"></script>
+    <script src="js/leaflet.pattern.js"></script>
+    <script src="js/leaflet-hash.js"></script>
+    <script src="js/Autolinker.min.js"></script>
+    <script src="js/rbush.min.js"></script>
+    <script src="js/labelgun.min.js"></script>
+    <script src="js/labels.js"></script>
+    <script src="js/leaflet-search.js"></script>
+    <script src="js/tailDT.js"></script>
+    <script src="js/nouislider.min.js"></script>
+    <script src="js/wNumb.js"></script>
+    <script src="data/EMROCountries_2.js"></script>
+    <script src="data/Numberofserviceproviderspercountry_3.js"></script>
+    <script src="data/Serviceproviders_4.js"></script>
+    <script>
+      var highlightLayer;
+      function highlightFeature(e) {
+        highlightLayer = e.target;
+
+        if (e.target.feature.geometry.type === "LineString") {
+          highlightLayer.setStyle({
+            color: "#ffff00",
+          });
+        } else {
+          highlightLayer.setStyle({
+            fillColor: "#ffff00",
+            fillOpacity: 1,
+          });
+        }
+      }
+      var map = L.map("map", {
+        zoomControl: true,
+        maxZoom: 20,
+        minZoom: 3,
+      }).fitBounds([
+        [-75.42225091840616, -91.34383869256274],
+        [52.62392375468019, 148.14770131680507],
+      ]);
+      var hash = new L.Hash(map);
+      map.attributionControl.setPrefix(
+        '<span class="company_text"><span style = "font-weight:bolder">Developed by: <span style = "font-weight:bolder;color:blue">MRT IT PEAKS LIMITED (UG)</span></span> </span> <a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>'
+      );
+      var autolinker = new Autolinker({
+        truncate: { length: 30, location: "smart" },
+      });
+      var bounds_group = new L.featureGroup([]);
+      function setBounds() {}
+      map.createPane("pane_GoogleMaps_0");
+      map.getPane("pane_GoogleMaps_0").style.zIndex = 400;
+      var layer_GoogleMaps_0 = L.tileLayer(
+        "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+        {
+          pane: "pane_GoogleMaps_0",
+          opacity: 0.501,
+          attribution: "",
+          minZoom: 3,
+          maxZoom: 20,
+        }
+      );
+
+      layer_GoogleMaps_0;
+      map.addLayer(layer_GoogleMaps_0);
+      map.createPane("pane_GoogleSatelliteHybrid_1");
+      map.getPane("pane_GoogleSatelliteHybrid_1").style.zIndex = 401;
+      var layer_GoogleSatelliteHybrid_1 = L.tileLayer(
+        "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        {
+          pane: "pane_GoogleSatelliteHybrid_1",
+          opacity: 1.0,
+          attribution: "",
+          minZoom: 3,
+          maxZoom: 20,
+        }
+      );
+      layer_GoogleSatelliteHybrid_1;
+      function pop_EMROCountries_2(feature, layer) {
+        layer.on({
+          mouseout: function (e) {
+            for (i in e.target._eventParents) {
+              e.target._eventParents[i].resetStyle(e.target);
+            }
+          },
+          mouseover: highlightFeature,
+        });
+        var popupContent =
+          '<table>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["iso_a2"] !== null
+            ? autolinker.link(feature.properties["iso_a2"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["COUNTRY"] !== null
+            ? autolinker.link(feature.properties["COUNTRY"].toLocaleString())
+            : "") +
+          "</td>\
+                         </tr>\
+                     </table>";
+        layer.bindPopup(popupContent, { maxHeight: 400 });
+      }
+
+      function style_EMROCountries_2_0() {
+        return {
+          pane: "pane_EMROCountries_2",
+          opacity: 1,
+          color: "rgba(0,0,0,1.0)",
+          dashArray: "1,5",
+          lineCap: "square",
+          lineJoin: "bevel",
+          weight: 2.0,
+          fillOpacity: 0,
+          interactive: false,
+        };
+      }
+      map.createPane("pane_EMROCountries_2");
+      map.getPane("pane_EMROCountries_2").style.zIndex = 402;
+      map.getPane("pane_EMROCountries_2").style["mix-blend-mode"] = "normal";
+      var layer_EMROCountries_2 = new L.geoJson(json_EMROCountries_2, {
+        attribution: "",
+        interactive: false,
+        dataVar: "json_EMROCountries_2",
+        layerName: "layer_EMROCountries_2",
+        pane: "pane_EMROCountries_2",
+        onEachFeature: pop_EMROCountries_2,
+        style: style_EMROCountries_2_0,
+      });
+      bounds_group.addLayer(layer_EMROCountries_2);
+      map.addLayer(layer_EMROCountries_2);
+      function pop_Numberofserviceproviderspercountry_3(feature, layer) {
+        layer.on({
+          mouseout: function (e) {
+            for (i in e.target._eventParents) {
+              e.target._eventParents[i].resetStyle(e.target);
+            }
+          },
+          mouseover: highlightFeature,
+        });
+        var popupContent =
+          '<table>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["iso_a2"] !== null
+            ? autolinker.link(feature.properties["iso_a2"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["COUNTRY"] !== null
+            ? autolinker.link(feature.properties["COUNTRY"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Name of fa"] !== null
+            ? autolinker.link(feature.properties["Name of fa"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Whatsapp n"] !== null
+            ? autolinker.link(feature.properties["Whatsapp n"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["COUNTRY_2"] !== null
+            ? autolinker.link(feature.properties["COUNTRY_2"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["City"] !== null
+            ? autolinker.link(feature.properties["City"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Year start"] !== null
+            ? autolinker.link(feature.properties["Year start"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Type of fa"] !== null
+            ? autolinker.link(feature.properties["Type of fa"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Patients s"] !== null
+            ? autolinker.link(feature.properties["Patients s"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Number of"] !== null
+            ? autolinker.link(feature.properties["Number of"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Staff trai"] !== null
+            ? autolinker.link(feature.properties["Staff trai"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Category"] !== null
+            ? autolinker.link(feature.properties["Category"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <td colspan="2">' +
+          (feature.properties["Service pr"] !== null
+            ? autolinker.link(feature.properties["Service pr"].toLocaleString())
+            : "") +
+          "</td>\
+                         </tr>\
+                     </table>";
+        layer.bindPopup(popupContent, { maxHeight: 400 });
+      }
+
+      function style_Numberofserviceproviderspercountry_3_0(feature) {
+        if (
+          feature.properties["Service pr"] >= 0.0 &&
+          feature.properties["Service pr"] <= 2.0
+        ) {
+          return {
+            pane: "pane_Numberofserviceproviderspercountry_3",
+            opacity: 1,
+            color: "rgba(35,35,35,1.0)",
+            dashArray: "",
+            lineCap: "butt",
+            lineJoin: "miter",
+            weight: 1.0,
+            fill: true,
+            fillOpacity: 1,
+            fillColor: "rgba(214,211,217,1.0)",
+            interactive: false,
+          };
+        }
+        if (
+          feature.properties["Service pr"] >= 2.0 &&
+          feature.properties["Service pr"] <= 10.0
+        ) {
+          return {
+            pane: "pane_Numberofserviceproviderspercountry_3",
+            opacity: 1,
+            color: "rgba(35,35,35,1.0)",
+            dashArray: "",
+            lineCap: "butt",
+            lineJoin: "miter",
+            weight: 1.0,
+            fill: true,
+            fillOpacity: 1,
+            fillColor: "rgba(28,172,158,1.0)",
+            interactive: false,
+          };
+        }
+        if (
+          feature.properties["Service pr"] >= 10.0 &&
+          feature.properties["Service pr"] <= 14.0
+        ) {
+          return {
+            pane: "pane_Numberofserviceproviderspercountry_3",
+            opacity: 1,
+            color: "rgba(35,35,35,1.0)",
+            dashArray: "",
+            lineCap: "butt",
+            lineJoin: "miter",
+            weight: 1.0,
+            fill: true,
+            fillOpacity: 1,
+            fillColor: "rgba(29,108,177,1.0)",
+            interactive: false,
+          };
+        }
+        if (
+          feature.properties["Service pr"] >= 14.0 &&
+          feature.properties["Service pr"] <= 20.0
+        ) {
+          return {
+            pane: "pane_Numberofserviceproviderspercountry_3",
+            opacity: 1,
+            color: "rgba(35,35,35,1.0)",
+            dashArray: "",
+            lineCap: "butt",
+            lineJoin: "miter",
+            weight: 1.0,
+            fill: true,
+            fillOpacity: 1,
+            fillColor: "rgba(8,48,107,1.0)",
+            interactive: false,
+          };
+        }
+      }
+      map.createPane("pane_Numberofserviceproviderspercountry_3");
+      map.getPane(
+        "pane_Numberofserviceproviderspercountry_3"
+      ).style.zIndex = 403;
+      map.getPane("pane_Numberofserviceproviderspercountry_3").style[
+        "mix-blend-mode"
+      ] = "normal";
+      var layer_Numberofserviceproviderspercountry_3 = new L.geoJson(
+        json_Numberofserviceproviderspercountry_3,
+        {
+          attribution: "",
+          interactive: false,
+          dataVar: "json_Numberofserviceproviderspercountry_3",
+          layerName: "layer_Numberofserviceproviderspercountry_3",
+          pane: "pane_Numberofserviceproviderspercountry_3",
+          onEachFeature: pop_Numberofserviceproviderspercountry_3,
+          style: style_Numberofserviceproviderspercountry_3_0,
+        }
+      );
+      bounds_group.addLayer(layer_Numberofserviceproviderspercountry_3);
+      map.addLayer(layer_Numberofserviceproviderspercountry_3);
+      function pop_Serviceproviders_4(feature, layer) {
+        layer.on({
+          mouseout: function (e) {
+            for (i in e.target._eventParents) {
+              e.target._eventParents[i].resetStyle(e.target);
+            }
+          },
+          mouseover: highlightFeature,
+        });
+        var popupContent =
+          '<table>\
+                         <tr>\
+                             <th scope="row">Name of facility</th>\
+                             <td>' +
+          (feature.properties["Name of facility"] !== null
+            ? autolinker.link(
+                feature.properties["Name of facility"].toLocaleString()
+              )
+            : "") +
+          "</td>\
+                         </tr>\
+                         " +
+          '<tr>\
+                             <th scope="row">Whatsapp number</th>\
+                             <td>' +
+          (feature.properties["Whatsapp number"] !== null
+            ? autolinker.link(
+                feature.properties["Whatsapp number"].toLocaleString()
+              )
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">COUNTRY</th>\
+                             <td>' +
+          (feature.properties["COUNTRY"] !== null
+            ? autolinker.link(feature.properties["COUNTRY"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">City</th>\
+                             <td>' +
+          (feature.properties["City"] !== null
+            ? autolinker.link(feature.properties["City"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">Year started</th>\
+                             <td>' +
+          (feature.properties["Year started"] !== null
+            ? autolinker.link(
+                feature.properties["Year started"].toLocaleString()
+              )
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">Type of facility</th>\
+                             <td>' +
+          (feature.properties["Type of facility"] !== null
+            ? autolinker.link(
+                feature.properties["Type of facility"].toLocaleString()
+              )
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">Patients served</th>\
+                             <td>' +
+          (feature.properties["Patients served"] !== null
+            ? autolinker.link(
+                feature.properties["Patients served"].toLocaleString()
+              )
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">Number of staff</th>\
+                             <td>' +
+          (feature.properties["Number of staff"] !== null
+            ? autolinker.link(
+                feature.properties["Number of staff"].toLocaleString()
+              )
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">Category</th>\
+                             <td>' +
+          (feature.properties["Category"] !== null
+            ? autolinker.link(feature.properties["Category"].toLocaleString())
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">Does this facility dispense opioids?</th>\
+                             <td>' +
+          (feature.properties["Does this facility dispense opioids?"] !== null
+            ? autolinker.link(
+                feature.properties[
+                  "Does this facility dispense opioids?"
+                ].toLocaleString()
+              )
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">7.2  Does the facility provide palliative care in humanitarian setting?</th>\
+                             <td>' +
+          (feature.properties[
+            "7.2  Does the facility provide palliative care in humanitarian setting?"
+          ] !== null
+            ? autolinker.link(
+                feature.properties[
+                  "7.2  Does the facility provide palliative care in humanitarian setting?"
+                ].toLocaleString()
+              )
+            : "") +
+          '</td>\
+                         </tr>\
+                         <tr>\
+                             <th scope="row">Website</th>\
+                             <td>' +
+          (feature.properties["Website"] !== null
+            ? autolinker.link(feature.properties["Website"].toLocaleString())
+            : "") +
+          "</td>\
+                         </tr>\
+                     </table>";
+        layer.bindPopup(popupContent, { maxHeight: 400 });
+      }
+
+      function style_Serviceproviders_4_0() {
+        return {
+          pane: "pane_Serviceproviders_4",
+          rotationAngle: 0.0,
+          rotationOrigin: "center center",
+          icon: L.icon({
+            iconUrl: "markers/Serviceproviders_4.svg",
+            iconSize: [30.4, 30.4],
+          }),
+          interactive: true,
+        };
+      }
+      map.createPane("pane_Serviceproviders_4");
+      map.getPane("pane_Serviceproviders_4").style.zIndex = 404;
+      map.getPane("pane_Serviceproviders_4").style["mix-blend-mode"] = "normal";
+      var layer_Serviceproviders_4 = new L.geoJson(json_Serviceproviders_4, {
+        attribution: "",
+        interactive: true,
+        dataVar: "json_Serviceproviders_4",
+        layerName: "layer_Serviceproviders_4",
+        pane: "pane_Serviceproviders_4",
+        onEachFeature: pop_Serviceproviders_4,
+        pointToLayer: function (feature, latlng) {
+          var context = {
+            feature: feature,
+            variables: {},
+          };
+          return L.marker(latlng, style_Serviceproviders_4_0(feature));
+        },
+      });
+      bounds_group.addLayer(layer_Serviceproviders_4);
+      map.addLayer(layer_Serviceproviders_4);
+      var title = new L.Control();
+      title.onAdd = function (map) {
+        this._div = L.DomUtil.create("div", "info");
+        this.update();
+        return this._div;
+      };
+      title.update = function () {
+        this._div.innerHTML =
+          "<h2>A comprehensive visual illustration of palliative care services in the Eastern Mediterranean Region.</h2>";
+      };
+      title.addTo(map);
+      var abstract = new L.Control({ position: "topright" });
+      abstract.onAdd = function (map) {
+        this._div = L.DomUtil.create("div", "leaflet-control abstract");
+        this._div.id = "abstract";
+        this._div.setAttribute("onmouseenter", "abstract.show()");
+        this._div.setAttribute("onmouseleave", "abstract.hide()");
+        this.hide();
+        return this._div;
+      };
+      abstract.hide = function () {
+        this._div.classList.remove("abstractUncollapsed");
+        this._div.classList.add("abstract");
+        this._div.innerHTML = "i";
+      };
+      abstract.show = function () {
+        this._div.classList.remove("abstract");
+        this._div.classList.add("abstractUncollapsed");
+        this._div.innerHTML =
+          "<br />A comprehensive visual illustration of palliative care services in the Eastern Mediterranean Region. The map illustrates the locations of the different palliative care facilities, Names of the facilities, services offered, estimated number of patients, and Year of establishment <br />";
+      };
+      abstract.addTo(map);
+      var baseMaps = {};
+      L.control
+        .layers(baseMaps, {
+          "Service providers": layer_Serviceproviders_4,
+          "Number of service providers per country<br />":
+            layer_Numberofserviceproviderspercountry_3,
+          "EMRO Countries": layer_EMROCountries_2,
+          "Google Satellite Hybrid": layer_GoogleSatelliteHybrid_1,
+          "Google Maps": layer_GoogleMaps_0,
+        })
+        .addTo(map);
+      setBounds();
+      map.addControl(
+        new L.Control.Search({
+          layer: layer_Serviceproviders_4,
+          initial: false,
+          hideMarkerOnCollapse: true,
+          propertyName: "Name of facility",
+        })
+      );
+      document.getElementsByClassName("search-button")[0].className +=
+        " fa fa-binoculars";
+      var mapDiv = document.getElementById("map");
+      var row = document.createElement("div");
+      row.className = "row";
+      row.id = "all";
+      row.style.height = "100%";
+      var col1 = document.createElement("div");
+      col1.className = "col9";
+      col1.id = "mapWindow";
+      col1.style.height = "99%";
+      col1.style.width = "80%";
+      col1.style.display = "inline-block";
+      var col2 = document.createElement("div");
+      col2.className = "col3";
+      col2.id = "menu";
+      col2.style.display = "inline-block";
+      mapDiv.parentNode.insertBefore(row, mapDiv);
+      document.getElementById("all").appendChild(col1);
+      document.getElementById("all").appendChild(col2);
+      col1.appendChild(mapDiv);
+      var Filters = {
+        "Year started": "int",
+        "Number of staff": "int",
+        "Patients served": "int",
+      };
+      function filterFunc() {
+        map.eachLayer(function (lyr) {
+          if ("options" in lyr && "dataVar" in lyr["options"]) {
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try {
+              for (key in Filters) {
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "");
+                if (Filters[key] == "str" || Filters[key] == "bool") {
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options;
+                  for (var i = 0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                  try {
+                    if (key in features[0].properties) {
+                      for (i = features.length - 1; i >= 0; --i) {
+                        if (
+                          selection.indexOf(features[i].properties[key]) < 0 &&
+                          selection.length > 0
+                        ) {
+                          features.splice(i, 1);
+                        }
+                      }
+                    }
+                  } catch (err) {}
+                }
+                if (Filters[key] == "int") {
+                  sliderVals = document
+                    .getElementById("div_" + keyS)
+                    .noUiSlider.get();
+                  try {
+                    if (key in features[0].properties) {
+                      for (i = features.length - 1; i >= 0; --i) {
+                        if (
+                          parseInt(features[i].properties[key]) <
+                            sliderVals[0] ||
+                          parseInt(features[i].properties[key]) > sliderVals[1]
+                        ) {
+                          features.splice(i, 1);
+                        }
+                      }
+                    }
+                  } catch (err) {}
+                }
+                if (Filters[key] == "real") {
+                  sliderVals = document
+                    .getElementById("div_" + keyS)
+                    .noUiSlider.get();
+                  try {
+                    if (key in features[0].properties) {
+                      for (i = features.length - 1; i >= 0; --i) {
+                        if (
+                          features[i].properties[key] < sliderVals[0] ||
+                          features[i].properties[key] > sliderVals[1]
+                        ) {
+                          features.splice(i, 1);
+                        }
+                      }
+                    }
+                  } catch (err) {}
+                }
+                if (
+                  Filters[key] == "date" ||
+                  Filters[key] == "datetime" ||
+                  Filters[key] == "time"
+                ) {
+                  try {
+                    if (key in features[0].properties) {
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, "");
+                      startdate = document
+                        .getElementById("dat_" + HTMLkey + "_date1")
+                        .value.replace(" ", "T");
+                      enddate = document
+                        .getElementById("dat_" + HTMLkey + "_date2")
+                        .value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i) {
+                        if (
+                          features[i].properties[key] < startdate ||
+                          features[i].properties[key] > enddate
+                        ) {
+                          features.splice(i, 1);
+                        }
+                      }
+                    }
+                  } catch (err) {}
+                }
+              }
+            } catch (err) {}
+            this[lyr["options"]["layerName"]].clearLayers();
+            this[lyr["options"]["layerName"]].addData(features);
+          }
+        });
+      }
+      /***************directory section starts********************/
+      document
+        .getElementById("menu")
+        .appendChild(document.createElement("div"));
+      var div_Directory = document.createElement("div");
+      div_Directory.innerHTML =
+        '<p class="legend_title">GUIDE</p><p>Select the layers icon to activate or deactivate a layer of your choice. Activate the “Service providers” and “Google satellite” if you would like to view a particular service provider and its neighborhood. Activate the “Number of service providers per country” and Google map” if you wish to view the countries with the highest number of service providers. Click in the drop down to switch to another map including the Heat map and the Arabic version.</p>';
+      div_Directory.className = "directory_Dynamic";
+      document.getElementById("menu").appendChild(div_Directory);
+      /***************directory section ends********************/
+      /*****************Year started slider starts**************************/
+      document
+        .getElementById("menu")
+        .appendChild(document.createElement("div"));
+      var div_Yearstarted = document.createElement("div");
+      div_Yearstarted.id = "div_Yearstarted";
+      div_Yearstarted.className = "slider";
+      document.getElementById("menu").appendChild(div_Yearstarted);
+      var lab_Yearstarted = document.createElement("div");
+      lab_Yearstarted.innerHTML =
+        'Year started: <span><select id="val_Yearstarted" class="slider-input select2"></select></span>  <span><select id="val_Yearended" class="slider-input select2"></select></span>';
+      lab_Yearstarted.className = "filterlabel";
+      document.getElementById("menu").appendChild(lab_Yearstarted);
+      var reset_Yearstarted = document.createElement("div");
+      reset_Yearstarted.innerHTML = "clear filter";
+      reset_Yearstarted.className = "filterlabel";
+      lab_Yearstarted.className = "filterlabel";
+      reset_Yearstarted.onclick = function () {
+        sel_Yearstarted.noUiSlider.reset();
+      };
+      document.getElementById("menu").appendChild(reset_Yearstarted);
+      var sel_Yearstarted = document.getElementById("div_Yearstarted");
+      noUiSlider.create(sel_Yearstarted, {
+        connect: true,
+        start: [1979, 2023],
+        step: 1,
+        format: wNumb({
+          decimals: 0,
+        }),
+        range: {
+          min: 1979,
+          max: 2023,
+        },
+      });
+
+      var inputNumberYearstarted = document.getElementById("val_Yearstarted");
+      // Append the option elements
+      for (var i = 1979; i <= 2023; i++) {
+        var option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+
+        inputNumberYearstarted.appendChild(option);
+      }
+      var inputNumberYearended = document.getElementById("val_Yearended");
+      // Append the option elements
+      for (var i = 1979; i <= 2023; i++) {
+        var option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+
+        inputNumberYearended.appendChild(option);
+      }
+
+      sel_Yearstarted.noUiSlider.on("update", function (values, handle) {
+        var value = values[handle];
+
+        if (handle) {
+          inputNumberYearended.value = value;
+        } else {
+          //select.value = Math.round(value);
+          inputNumberYearstarted.value = value;
+        }
+        filterFunc();
+      });
+
+      inputNumberYearstarted.addEventListener("change", function () {
+        sel_Yearstarted.noUiSlider.set([this.value, null]);
+      });
+
+      inputNumberYearended.addEventListener("change", function () {
+        sel_Yearstarted.noUiSlider.set([null, this.value]);
+      });
+      /*****************Year started slider ends**************************/
+
+      /*****************No of staff slider starts**************************/
+      /*document
+        .getElementById("menu")
+        .appendChild(document.createElement("div"));
+      var div_Numberofstaff = document.createElement("div");
+      div_Numberofstaff.id = "div_Numberofstaff";
+      div_Numberofstaff.className = "slider";
+      document.getElementById("menu").appendChild(div_Numberofstaff);
+      var lab_Numberofstaff = document.createElement("div");
+      lab_Numberofstaff.innerHTML =
+        'Number of staff: <span><select id="val_Numberofstaff" class="slider-input select2"></select></span>  <span><select id="val_Numberofstaff2" class="slider-input select2"></select></span>';
+      lab_Numberofstaff.className = "filterlabel";
+      document.getElementById("menu").appendChild(lab_Numberofstaff);
+      var reset_Numberofstaff = document.createElement("div");
+      reset_Numberofstaff.innerHTML = "clear filter";
+      reset_Numberofstaff.className = "filterlabel";
+      lab_Numberofstaff.className = "filterlabel";
+      reset_Numberofstaff.onclick = function () {
+        sel_Numberofstaff.noUiSlider.reset();
+      };
+      document.getElementById("menu").appendChild(reset_Numberofstaff);
+      var sel_Numberofstaff = document.getElementById("div_Numberofstaff");
+      noUiSlider.create(sel_Numberofstaff, {
+        connect: true,
+        start: [1, 82],
+        step: 1,
+        format: wNumb({
+          decimals: 0,
+        }),
+        range: {
+          min: 1,
+          max: 82,
+        },
+      });
+      var val_Numberofstaff = document.getElementById("val_Numberofstaff");
+      // Append the option elements
+      for (var i = 1; i <= 82; i++) {
+        var option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+
+        val_Numberofstaff.appendChild(option);
+      }
+      var val_Numberofstaff2 = document.getElementById("val_Numberofstaff2");
+      // Append the option elements
+      for (var i = 1; i <= 82; i++) {
+        var option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+
+        val_Numberofstaff2.appendChild(option);
+      }
+
+      sel_Numberofstaff.noUiSlider.on("update", function (values, handle) {
+        var value = values[handle];
+
+        if (handle) {
+          val_Numberofstaff2.value = value;
+        } else {
+          //select.value = Math.round(value);
+          val_Numberofstaff.value = value;
+        }
+        filterFunc();
+      });
+
+      val_Numberofstaff.addEventListener("change", function () {
+        sel_Numberofstaff.noUiSlider.set([this.value, null]);
+      });
+
+      val_Numberofstaff2.addEventListener("change", function () {
+        sel_Numberofstaff.noUiSlider.set([null, this.value]);
+      });*/
+      /*****************No of staff slider ends**************************/
+      /*****************Patients served slider starts**************************/
+      document
+        .getElementById("menu")
+        .appendChild(document.createElement("div"));
+      var div_Patientsserved = document.createElement("div");
+      div_Patientsserved.id = "div_Patientsserved";
+      div_Patientsserved.className = "slider";
+      document.getElementById("menu").appendChild(div_Patientsserved);
+      var lab_Patientsserved = document.createElement("div");
+      lab_Patientsserved.innerHTML =
+        'Patients served: <span><input id="val_Patientsserved" class="slider-input"></span>  <span><input id="val_Patientsserved2" class="slider-input"></span>';
+      lab_Patientsserved.className = "filterlabel";
+      document.getElementById("menu").appendChild(lab_Patientsserved);
+      var reset_Patientsserved = document.createElement("div");
+      reset_Patientsserved.innerHTML = "clear filter";
+      reset_Patientsserved.className = "filterlabel";
+      lab_Patientsserved.className = "filterlabel";
+      reset_Patientsserved.onclick = function () {
+        sel_Patientsserved.noUiSlider.reset();
+      };
+      document.getElementById("menu").appendChild(reset_Patientsserved);
+      var sel_Patientsserved = document.getElementById("div_Patientsserved");
+      noUiSlider.create(sel_Patientsserved, {
+        connect: true,
+        start: [0, 60000],
+        step: 1,
+        format: wNumb({
+          decimals: 0,
+        }),
+        range: {
+          min: 0,
+          max: 60000,
+        },
+      });
+      /*sel_Patientsserved.noUiSlider.on("update", function (values) {
+             filterVals = [];
+             for (value in values) {
+               filterVals.push(parseInt(value));
+             }
+             val_Patientsserved = document.getElementById("val_Patientsserved");
+             val_Patientsserved.innerHTML = values.join(" - ");
+             filterFunc();
+           });*/
+
+      var val_Patientsserved = document.getElementById("val_Patientsserved");
+
+      var val_Patientsserved2 = document.getElementById("val_Patientsserved2");
+
+      sel_Patientsserved.noUiSlider.on("update", function (values, handle) {
+        var value = values[handle];
+
+        if (handle) {
+          val_Patientsserved2.value = value;
+        } else {
+          //select.value = Math.round(value);
+          val_Patientsserved.value = value;
+        }
+        filterFunc();
+      });
+
+      val_Patientsserved.addEventListener("keyup", function () {
+        sel_Patientsserved.noUiSlider.set([this.value, null]);
+      });
+
+      val_Patientsserved2.addEventListener("keyup", function () {
+        sel_Patientsserved.noUiSlider.set([null, this.value]);
+      });
+      /*****************Patients served slider ends**************************/
+      /***************legend section starts********************/
+      document
+        .getElementById("menu")
+        .appendChild(document.createElement("div"));
+      var div_Legend = document.createElement("div");
+      div_Legend.innerHTML =
+        '<p><img class="service_providers_icon" src="legend/ServiceProviders_4.svg" /> Service Providers</p><p class="legend_title">Countries categorized according to number of service providers</p><p><table><tr><td style="text-align: center;"><img src="legend/Numberofserviceproviderspercountry_3_Lessthan2serviceproviders0.png" /></td><td>Less than 2 service providers</td></tr><tr><td style="text-align: center;"><img src="legend/Numberofserviceproviderspercountry_3_2101.png" /></td><td>2 - 10</td></tr><tr><td style="text-align: center;"><img src="legend/Numberofserviceproviderspercountry_3_10142.png" /></td><td>10 - 14</td></tr><tr><td style="text-align: center;"><img src="legend/Numberofserviceproviderspercountry_3_Greaterthan143.png" /></td><td>Greater than 14</td></tr></table></p>';
+      div_Legend.className = "legend_Dynamic";
+      document.getElementById("menu").appendChild(div_Legend);
+      /***************legend section ends********************/
+
+      resetLabels([layer_Numberofserviceproviderspercountry_3]);
+      map.on("zoomend", function () {
+        resetLabels([layer_Numberofserviceproviderspercountry_3]);
+      });
+      map.on("layeradd", function () {
+        resetLabels([layer_Numberofserviceproviderspercountry_3]);
+      });
+      map.on("layerremove", function () {
+        resetLabels([layer_Numberofserviceproviderspercountry_3]);
+      });
+    </script>
+  </body>
+</html>
